@@ -10,7 +10,9 @@ import { serveStatic } from 'frog/serve-static'
 import { Box, Heading, Text, VStack, vars } from './ui.js'
 
 const supabase = createSupabaseAdmin()
-const BASE_URL = 'http://localhost:3000'
+const BASE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : 'http://localhost:3000'
 
 const app = new Frog({
   basePath: '/frame',
