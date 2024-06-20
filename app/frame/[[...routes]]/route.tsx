@@ -4,6 +4,7 @@
 import { createSupabaseAdmin } from '@/utils/supabase/admin'
 import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
+import { pinata } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
 import { Box, Heading, Text, VStack, vars } from './ui.js'
@@ -14,6 +15,7 @@ const BASE_URL = 'http://localhost:3000'
 const app = new Frog({
   basePath: '/frame',
   ui: { vars },
+  hub: pinata(),
 })
 
 app.frame('/', (c) => {
@@ -42,9 +44,9 @@ app.frame('/', (c) => {
 })
 
 app.frame('/signup', async (c) => {
-  const { inputText, frameData } = c
+  const { inputText, frameData, verified } = c
 
-  if (frameData?.fid) {
+  if (frameData?.fid && verified) {
     try {
       const { data: user, error: selectError } = await supabase
         .from('links')
