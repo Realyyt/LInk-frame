@@ -1,5 +1,4 @@
 import { createSupabaseServer } from '@/utils/supabase/server'
-import { getSSLHubRpcClient, isUserDataAddMessage } from '@farcaster/hub-nodejs'
 
 type FarcasterUser = {
   pfp: string
@@ -13,38 +12,44 @@ const DEFAULT_FARCASTER_USER = {
   bio: '',
 }
 
-const farcasterClient = getSSLHubRpcClient('hub-grpc.pinata.cloud')
+async function getFarcasterUser(fid: string): Promise<FarcasterUser> {
+  const res = await fetch(
+    `https://hub.pinata.cloud/v1/userDataByFid?fid=${fid}`,
+    {
+      method: 'GET',
+    }
+  )
 
-async function getFarcasterUser(fid: number): Promise<FarcasterUser> {
-  const result = await farcasterClient.getAllUserDataMessagesByFid({ fid })
+  if (!res.ok) {
+    return DEFAULT_FARCASTER_USER
+  }
 
-  // https://github.com/farcasterxyz/hub-monorepo/blob/main/packages/hub-nodejs/examples/chron-feed/index.ts
-  const user = result.match(
-    (data) => {
-      return data.messages.reduce((acc: FarcasterUser, message) => {
-        if (isUserDataAddMessage(message)) {
-          // https://docs.farcaster.xyz/reference/hubble/httpapi/userdata
+  const data = await res.json()
 
-          // Profile Picture
-          if (message.data.userDataBody.type === 1) {
-            acc.pfp = message.data.userDataBody.value
-          }
+  if (data.messages.length === 0) {
+    return DEFAULT_FARCASTER_USER
+  }
 
-          // Display Name
-          if (message.data.userDataBody.type === 2) {
-            acc.displayName = message.data.userDataBody.value
-          }
+  const user = data.messages.reduce(
+    (
+      acc: FarcasterUser,
+      message: { data: { userDataBody: { type: string; value: string } } }
+    ) => {
+      if (message.data.userDataBody.type === 'USER_DATA_TYPE_PFP') {
+        acc.pfp = message.data.userDataBody.value
+      }
 
-          // Bio
-          if (message.data.userDataBody.type === 3) {
-            acc.bio = message.data.userDataBody.value
-          }
-        }
+      if (message.data.userDataBody.type === 'USER_DATA_TYPE_DISPLAY') {
+        acc.displayName = message.data.userDataBody.value
+      }
 
-        return acc
-      }, DEFAULT_FARCASTER_USER)
+      if (message.data.userDataBody.type === 'USER_DATA_TYPE_BIO') {
+        acc.bio = message.data.userDataBody.value
+      }
+
+      return acc
     },
-    () => DEFAULT_FARCASTER_USER
+    DEFAULT_FARCASTER_USER
   )
 
   return user
@@ -65,7 +70,7 @@ export default async function UserPage({
     .limit(1)
     .maybeSingle()
 
-  const farcasterUser = await getFarcasterUser(parseInt(fid))
+  const farcasterUser = await getFarcasterUser(fid)
 
   if (!farcasterUser.pfp) {
     return <div className="max-w-3xl mx-auto py-8 px-6">User Not Found</div>
