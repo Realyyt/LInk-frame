@@ -78,7 +78,11 @@ export default async function UserPage({
 
   return (
     <div className="max-w-3xl mx-auto py-8 px-6">
-      <img className="w-24 h-24 rounded-full" src={farcasterUser.pfp} alt="" />
+      <img
+        className="w-24 h-24 rounded-full object-cover"
+        src={farcasterUser.pfp}
+        alt={farcasterUser.displayName}
+      />
       <p className="mt-4">{farcasterUser.displayName}</p>
       <p>{farcasterUser.bio}</p>
       {!linksData && <p className="mt-4">😭 No Links Found</p>}
