@@ -12,7 +12,7 @@ const DEFAULT_FARCASTER_USER = {
   bio: '',
 }
 
-async function getFarcasterUser(fid: string): Promise<FarcasterUser> {
+async function getFarcasterUser(fid: number): Promise<FarcasterUser> {
   const res = await fetch(
     `https://hub.pinata.cloud/v1/userDataByFid?fid=${fid}`,
     {
@@ -55,14 +55,36 @@ async function getFarcasterUser(fid: string): Promise<FarcasterUser> {
   return user
 }
 
-export default async function UserPage({
-  params,
-}: {
-  params: { fid: string }
-}) {
-  const { fid } = params
+async function getFarcasterIdByUsername(username: string) {
+  const res = await fetch(
+    `https://hub.pinata.cloud/v1/userNameProofByName?name=${username}`,
+    {
+      method: 'GET',
+    }
+  )
+
+  if (!res.ok) {
+    return 0
+  }
+
+  const data = await res.json()
+
+  return data.fid
+}
+
+export default async function UserPage({ params }: { params: { id: string } }) {
+  const { id } = params
 
   const supabase = createSupabaseServer()
+
+  let fid = id
+
+  // Test to see if `id` is potentially a username
+  const isNumbersOnly = new RegExp('^[0-9]+$')
+  if (!isNumbersOnly.test(id)) {
+    fid = await getFarcasterIdByUsername(id)
+  }
+
   const { data: linksData } = await supabase
     .from('links')
     .select()
@@ -70,7 +92,7 @@ export default async function UserPage({
     .limit(1)
     .maybeSingle()
 
-  const farcasterUser = await getFarcasterUser(fid)
+  const farcasterUser = await getFarcasterUser(Number(fid))
 
   if (!farcasterUser.pfp) {
     return <div className="max-w-3xl mx-auto py-8 px-6">User Not Found</div>
