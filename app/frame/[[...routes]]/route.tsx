@@ -204,7 +204,7 @@ app.frame('/user/:id', async (c) => {
     <Button action="/signup">Add Link</Button>,
   ]
 
-  if (linksData.website) {
+  if (linksData && linksData.website) {
     intents = [<Button.Link href={linksData.website}>View Website</Button.Link>]
   }
 
