@@ -1,4 +1,23 @@
 import { createSupabaseServer } from '@/utils/supabase/server'
+import { getFrameMetadata } from 'frog/next'
+import type { Metadata } from 'next'
+
+type Props = {
+  params: { id: string }
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const BASE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000'
+
+  const { id } = params
+  const frameMetadata = await getFrameMetadata(`${BASE_URL}/frame/user/${id}`)
+
+  return {
+    other: frameMetadata,
+  }
+}
 
 type FarcasterUser = {
   bio: string
@@ -78,7 +97,7 @@ async function getFarcasterIdByUsername(username: string) {
   return data.fid
 }
 
-export default async function UserPage({ params }: { params: { id: string } }) {
+export default async function UserPage({ params }: Props) {
   const { id } = params
 
   const supabase = createSupabaseServer()

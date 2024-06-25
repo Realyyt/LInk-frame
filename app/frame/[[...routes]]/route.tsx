@@ -156,6 +156,18 @@ app.frame('/signup', async (c) => {
   })
 })
 
+app.frame('/user/:id', (c) => {
+  const id = c.req.param('id')
+
+  return c.res({
+    image: (
+      <div style={{ color: 'white', display: 'flex', fontSize: 60 }}>
+        gm, {id}
+      </div>
+    ),
+  })
+})
+
 devtools(app, { serveStatic })
 
 export const GET = handle(app)
