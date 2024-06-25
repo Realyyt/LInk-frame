@@ -1,13 +1,18 @@
 /** @jsxImportSource frog/jsx */
 
 /* eslint-disable react/jsx-key */
+/* eslint-disable jsx-a11y/alt-text */
+import {
+  getFarcasterIdByUsername,
+  getFarcasterUser,
+} from '@/utils/fetch-farcaster-user'
 import { createSupabaseAdmin } from '@/utils/supabase/admin'
 import { Button, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
 import { pinata } from 'frog/hubs'
 import { handle } from 'frog/next'
 import { serveStatic } from 'frog/serve-static'
-import { Box, Heading, Text, VStack, vars } from './ui.js'
+import { Box, Heading, Image, Text, VStack, vars } from './ui.js'
 
 const supabase = createSupabaseAdmin()
 const BASE_URL = process.env.VERCEL_PROJECT_PRODUCTION_URL
@@ -156,14 +161,59 @@ app.frame('/signup', async (c) => {
   })
 })
 
-app.frame('/user/:id', (c) => {
+app.frame('/user/:id', async (c) => {
   const id = c.req.param('id')
+
+  let fid = id
+
+  // Test to see if `id` is potentially a username
+  const isNumbersOnly = new RegExp('^[0-9]+$')
+  if (!isNumbersOnly.test(id)) {
+    fid = await getFarcasterIdByUsername(id)
+  }
+
+  const farcasterUser = await getFarcasterUser(Number(fid))
+
+  if (!farcasterUser.username) {
+    return c.res({
+      image: (
+        <Box
+          grow
+          alignVertical="center"
+          backgroundColor="background"
+          padding="32"
+        >
+          <Heading>Error ⚠️</Heading>
+          <Text color="text200" size="20">
+            User Not Found
+          </Text>
+        </Box>
+      ),
+    })
+  }
 
   return c.res({
     image: (
-      <div style={{ color: 'white', display: 'flex', fontSize: 60 }}>
-        gm, {id}
-      </div>
+      <Box
+        grow
+        alignVertical="center"
+        backgroundColor="background"
+        padding="32"
+      >
+        <VStack gap="8">
+          <Image
+            src={farcasterUser.pfp}
+            width="96"
+            height="96"
+            objectFit="cover"
+            borderRadius="48"
+          />
+          <Heading>{farcasterUser.displayName}</Heading>
+          <Text color="text200" size="16">
+            {farcasterUser.bio}
+          </Text>
+        </VStack>
+      </Box>
     ),
   })
 })
