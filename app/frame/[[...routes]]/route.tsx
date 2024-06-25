@@ -7,7 +7,7 @@ import {
   getFarcasterUser,
 } from '@/utils/fetch-farcaster-user'
 import { createSupabaseAdmin } from '@/utils/supabase/admin'
-import { Button, Frog, TextInput } from 'frog'
+import { Button, FrameIntent, Frog, TextInput } from 'frog'
 import { devtools } from 'frog/dev'
 import { pinata } from 'frog/hubs'
 import { handle } from 'frog/next'
@@ -172,6 +172,13 @@ app.frame('/user/:id', async (c) => {
     fid = await getFarcasterIdByUsername(id)
   }
 
+  const { data: linksData } = await supabase
+    .from('links')
+    .select()
+    .eq('fid', fid)
+    .limit(1)
+    .maybeSingle()
+
   const farcasterUser = await getFarcasterUser(Number(fid))
 
   if (!farcasterUser.username) {
@@ -190,6 +197,15 @@ app.frame('/user/:id', async (c) => {
         </Box>
       ),
     })
+  }
+
+  let intents: FrameIntent[] = [
+    <TextInput placeholder="Enter Link..." />,
+    <Button action="/signup">Add Link</Button>,
+  ]
+
+  if (linksData.website) {
+    intents = [<Button.Link href={linksData.website}>View Website</Button.Link>]
   }
 
   return c.res({
@@ -215,6 +231,7 @@ app.frame('/user/:id', async (c) => {
         </VStack>
       </Box>
     ),
+    intents,
   })
 })
 
