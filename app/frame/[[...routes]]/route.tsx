@@ -68,15 +68,17 @@ app.frame('/signup', async (c) => {
 
       if (!user) {
         const { error: insertUserError } = await supabase.from('users').insert({
-          fid: frameData?.fid,
+          fid: frameData.fid,
         })
 
         const { error: insertLinksError } = await supabase
           .from('links')
-          .insert({
-            website: inputText,
-          })
-          .eq('user_fid', frameData?.fid)
+          .insert([
+            {
+              website: inputText,
+              user_fid: frameData.fid,
+            },
+          ])
 
         if (insertUserError || insertLinksError) {
           throw new Error('Error creating user')
@@ -106,7 +108,7 @@ app.frame('/signup', async (c) => {
         .update({
           website: inputText,
         })
-        .eq('user_fid', frameData?.fid)
+        .eq('user_fid', frameData.fid)
 
       if (updateError) {
         throw new Error(updateError.message)
