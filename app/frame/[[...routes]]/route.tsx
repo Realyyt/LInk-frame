@@ -56,7 +56,7 @@ app.frame('/signup', async (c) => {
   if (frameData?.fid && verified) {
     try {
       const { data: user, error: selectError } = await supabase
-        .from('links')
+        .from('users')
         .select()
         .eq('fid', frameData.fid)
         .limit(1)
@@ -67,13 +67,19 @@ app.frame('/signup', async (c) => {
       }
 
       if (!user) {
-        const { error: insertError } = await supabase.from('links').insert({
-          website: inputText,
+        const { error: insertUserError } = await supabase.from('users').insert({
           fid: frameData?.fid,
         })
 
-        if (insertError) {
-          throw new Error(insertError.message)
+        const { error: insertLinksError } = await supabase
+          .from('links')
+          .insert({
+            website: inputText,
+          })
+          .eq('user_fid', frameData?.fid)
+
+        if (insertUserError || insertLinksError) {
+          throw new Error('Error creating user')
         }
 
         return c.res({
@@ -100,7 +106,7 @@ app.frame('/signup', async (c) => {
         .update({
           website: inputText,
         })
-        .eq('fid', frameData?.fid)
+        .eq('user_fid', frameData?.fid)
 
       if (updateError) {
         throw new Error(updateError.message)
@@ -175,7 +181,7 @@ app.frame('/user/:id', async (c) => {
   const { data: linksData } = await supabase
     .from('links')
     .select()
-    .eq('fid', fid)
+    .eq('user_fid', fid)
     .limit(1)
     .maybeSingle()
 

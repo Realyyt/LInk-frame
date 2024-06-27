@@ -38,7 +38,7 @@ export default async function UserPage({ params }: Props) {
   const { data: linksData } = await supabase
     .from('links')
     .select()
-    .eq('fid', fid)
+    .eq('user_fid', fid)
     .limit(1)
     .maybeSingle()
 
