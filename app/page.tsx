@@ -1,3 +1,4 @@
+import { EditProfile } from './components/EditProfile'
 import { LoginButton } from './components/LoginButton'
 import { UserProfile } from './components/UserProfile'
 
@@ -10,7 +11,9 @@ export default function Home() {
           <LoginButton />
         </div>
       </header>
-      <main className="max-w-7xl mx-auto px-6 py-8"></main>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        <EditProfile />
+      </main>
     </>
   )
 }
