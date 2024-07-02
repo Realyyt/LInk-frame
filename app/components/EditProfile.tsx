@@ -1,6 +1,8 @@
 import { createSupabaseServer } from '@/utils/supabase/server'
 import { PrivyClient } from '@privy-io/server-auth'
 import { cookies } from 'next/headers'
+import Link from 'next/link'
+import { saveProfile } from '../actions'
 
 const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID!
 const appSecret = process.env.PRIVY_APP_SECRET!
@@ -17,8 +19,8 @@ async function verifyToken(authToken: string) {
 }
 
 export async function EditProfile() {
+  // Gets the Privy accessToken and verifies it
   const accessToken = cookies().get('privy-token')
-
   let verified
 
   if (accessToken?.value) {
@@ -29,38 +31,47 @@ export async function EditProfile() {
     return null
   }
 
+  // Gets the Privy user once the accessToken is verified
   const user = await privy.getUser(verified?.userId)
 
-  const supabase = createSupabaseServer()
+  if (!user.farcaster?.fid) {
+    return null
+  }
 
+  // Looks in the database to find links associated with the Farcaster ID
+  const supabase = createSupabaseServer()
   const { data: linksData } = await supabase
     .from('links')
     .select()
-    .eq('user_fid', user.farcaster?.fid)
+    .eq('user_fid', user.farcaster.fid)
     .limit(1)
     .maybeSingle()
+
+  const saveProfileWithFid = saveProfile.bind(null, user.farcaster.fid)
 
   return (
     <div>
       <h1 className="text-2xl lg:text-4xl font-semibold">Edit Profile</h1>
       <div className="mt-8">
-        <form>
+        <form action={saveProfileWithFid}>
           {linksData.website && (
             <div className="my-4 flex flex-col gap-2 w-60">
               <label>Website:</label>
               <input
-                className="px-2 py-1 text-gray-800"
+                name="website"
                 type="text"
                 defaultValue={linksData.website}
+                className="px-2 py-1 text-gray-800"
               />
             </div>
           )}
-          <button
-            className="mt-8 px-6 py-2 bg-pink-700 rounded-md"
-            type="submit"
-          >
-            Save
-          </button>
+          <div className="flex items-center gap-4 mt-8">
+            <button className="px-6 py-2 bg-pink-700 rounded-md" type="submit">
+              Save
+            </button>
+
+            <Link href={`/user/${user.farcaster.fid}`}>View Profile</Link>
+          </div>
         </form>
       </div>
     </div>
