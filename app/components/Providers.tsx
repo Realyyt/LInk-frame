@@ -1,16 +1,18 @@
 'use client'
-import { getQueryClient } from '@/utils/react-query/get-query-client'
-import { QueryClientProvider } from '@tanstack/react-query'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import type * as React from 'react'
+
+import { PrivyProvider } from '@privy-io/react-auth'
 
 export default function Providers({ children }: { children: React.ReactNode }) {
-  const queryClient = getQueryClient()
-
   return (
-    <QueryClientProvider client={queryClient}>
+    <PrivyProvider
+      appId="clv0dfab702dlh9ntk739djui"
+      config={{
+        appearance: {
+          theme: 'dark',
+        },
+      }}
+    >
       {children}
-      <ReactQueryDevtools />
-    </QueryClientProvider>
+    </PrivyProvider>
   )
 }
