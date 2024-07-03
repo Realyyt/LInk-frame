@@ -84,8 +84,8 @@ export default async function UserPage({ params }: Props) {
           </svg>
         </a>
       </p>
-      {!linksData && <p className="mt-4">😭 No Links Found</p>}
-      {linksData && (
+      {!linksData?.website && <p className="mt-4">😭 No Links Found</p>}
+      {linksData?.website && (
         <p className="mt-4">
           Website:{' '}
           <a className="underline hover:no-underline" href={linksData.website}>

@@ -2,6 +2,7 @@ import { privy, verifyPrivyToken } from '@/utils/privy-server'
 import { createSupabaseServer } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { saveProfile } from '../actions'
+import { SubmitButton } from './SubmitButton'
 
 export async function EditProfile() {
   const verified = await verifyPrivyToken()
@@ -33,21 +34,17 @@ export async function EditProfile() {
       <h1 className="text-2xl lg:text-4xl font-semibold">Edit Profile</h1>
       <div className="mt-8">
         <form action={saveProfileWithFid}>
-          {linksData.website && (
-            <div className="my-4 flex flex-col gap-2 w-60">
-              <label>Website:</label>
-              <input
-                name="website"
-                type="text"
-                defaultValue={linksData.website}
-                className="px-2 py-1 text-gray-800"
-              />
-            </div>
-          )}
+          <div className="my-4 flex flex-col gap-2 w-60">
+            <label>Website:</label>
+            <input
+              name="website"
+              type="text"
+              defaultValue={linksData.website}
+              className="px-2 py-1 text-gray-800"
+            />
+          </div>
           <div className="flex items-center gap-4 mt-8">
-            <button className="px-6 py-2 bg-pink-700 rounded-md" type="submit">
-              Save
-            </button>
+            <SubmitButton />
 
             <Link href={`/user/${user.farcaster.fid}`}>View Profile</Link>
           </div>
