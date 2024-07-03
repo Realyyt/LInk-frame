@@ -1,22 +1,8 @@
+import { privy, verifyPrivyToken } from '@/utils/privy-server'
 import { createSupabaseServer } from '@/utils/supabase/server'
-import { PrivyClient } from '@privy-io/server-auth'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { saveProfile } from '../actions'
-
-const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID!
-const appSecret = process.env.PRIVY_APP_SECRET!
-
-const privy = new PrivyClient(appId, appSecret)
-
-async function verifyToken(authToken: string) {
-  try {
-    const verifiedClaims = await privy.verifyAuthToken(authToken)
-    return verifiedClaims
-  } catch (error) {
-    console.log(`Token verification failed with error ${error}.`)
-  }
-}
 
 export async function EditProfile() {
   // Gets the Privy accessToken and verifies it
@@ -24,7 +10,7 @@ export async function EditProfile() {
   let verified
 
   if (accessToken?.value) {
-    verified = await verifyToken(accessToken?.value)
+    verified = await verifyPrivyToken(accessToken?.value)
   }
 
   if (!accessToken || !verified) {
