@@ -1,25 +1,20 @@
-import { privy, verifyPrivyToken } from '@/utils/privy-server'
-import { createSupabaseServer } from '@/utils/supabase/server'
+'use client'
+
+import { createSupabaseBrowser } from '@/utils/supabase/browser'
+import { usePrivy } from '@privy-io/react-auth'
 import Link from 'next/link'
 import { saveProfile } from '../actions'
 import { SubmitButton } from './SubmitButton'
 
-export async function EditProfile() {
-  const verified = await verifyPrivyToken()
+export function EditProfile() {
+  const { ready, authenticated, user } = usePrivy()
 
-  if (!verified?.userId) {
-    return null
-  }
-
-  // Gets the Privy user once the accessToken is verified
-  const user = await privy.getUser(verified?.userId)
-
-  if (!user.farcaster?.fid) {
+  if (!ready || !authenticated || !user?.farcaster?.fid) {
     return null
   }
 
   // Looks in the database to find links associated with the Farcaster ID
-  const supabase = createSupabaseServer()
+  const supabase = createSupabaseBrowser()
   const { data: linksData } = await supabase
     .from('links')
     .select()
@@ -45,7 +40,6 @@ export async function EditProfile() {
           </div>
           <div className="flex items-center gap-4 mt-8">
             <SubmitButton />
-
             <Link href={`/user/${user.farcaster.fid}`}>View Profile</Link>
           </div>
         </form>
