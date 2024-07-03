@@ -12,8 +12,6 @@ const supabase = createSupabaseBrowser()
 export function EditProfile() {
   const { ready, authenticated, user } = usePrivy()
 
-  console.log('user?.farcaster?.fid', user?.farcaster?.fid)
-
   const { data: linksData } = useQuery({
     queryKey: ['links', user?.farcaster?.fid],
     queryFn: async () => {
