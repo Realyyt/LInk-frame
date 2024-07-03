@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <>
       <header className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex justify-between">
+        <div className="flex items-center justify-between">
           <UserProfile />
           <LoginButton />
         </div>
