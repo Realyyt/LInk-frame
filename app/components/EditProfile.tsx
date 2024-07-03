@@ -1,19 +1,12 @@
 import { privy, verifyPrivyToken } from '@/utils/privy-server'
 import { createSupabaseServer } from '@/utils/supabase/server'
-import { cookies } from 'next/headers'
 import Link from 'next/link'
 import { saveProfile } from '../actions'
 
 export async function EditProfile() {
-  // Gets the Privy accessToken and verifies it
-  const accessToken = cookies().get('privy-token')
-  let verified
+  const verified = await verifyPrivyToken()
 
-  if (accessToken?.value) {
-    verified = await verifyPrivyToken(accessToken?.value)
-  }
-
-  if (!accessToken || !verified) {
+  if (!verified?.userId) {
     return null
   }
 

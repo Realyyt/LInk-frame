@@ -1,11 +1,18 @@
 'use server'
 
+import { verifyPrivyToken } from '@/utils/privy-server'
 import { createSupabaseAdmin } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 const supabaseAdmin = createSupabaseAdmin()
 
 export async function saveProfile(fid: number, formData: FormData) {
+  const verified = await verifyPrivyToken()
+
+  if (!verified) {
+    throw new Error('User not verified')
+  }
+
   const website = formData.get('website')
 
   try {
