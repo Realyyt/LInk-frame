@@ -27,7 +27,11 @@ export function EditProfile() {
   })
 
   if (!ready || !authenticated || !user?.farcaster?.fid) {
-    return null
+    return (
+      <h1 className="text-center text-xl lg:text-3xl font-semibold">
+        Log in to edit your profile
+      </h1>
+    )
   }
 
   const saveProfileWithFid = saveProfile.bind(null, user.farcaster.fid)

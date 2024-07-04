@@ -12,7 +12,7 @@ export function LoginButton() {
       <button
         disabled={disableLogin}
         onClick={login}
-        className="px-6 py-2 bg-pink-700 rounded-md disabled:bg-gray-500"
+        className="ml-auto px-6 py-2 bg-pink-700 rounded-md disabled:bg-gray-500"
       >
         Log in
       </button>
@@ -23,7 +23,7 @@ export function LoginButton() {
     return (
       <button
         onClick={logout}
-        className="px-6 py-2 bg-pink-700 rounded-md disabled:bg-gray-500"
+        className="ml-auto px-6 py-2 bg-pink-700 rounded-md disabled:bg-gray-500"
       >
         Log Out
       </button>
