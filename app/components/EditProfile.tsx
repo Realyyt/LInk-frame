@@ -4,6 +4,7 @@ import { createSupabaseBrowser } from '@/utils/supabase/browser'
 import { usePrivy } from '@privy-io/react-auth'
 import { useQuery } from '@tanstack/react-query'
 import Link from 'next/link'
+import { useFormStatus } from 'react-dom'
 import { saveProfile } from '../actions'
 import { SubmitButton } from './SubmitButton'
 
@@ -11,6 +12,7 @@ const supabase = createSupabaseBrowser()
 
 export function EditProfile() {
   const { ready, authenticated, user } = usePrivy()
+  const { pending } = useFormStatus()
 
   const { data: linksData } = useQuery({
     queryKey: ['links', user?.farcaster?.fid],
@@ -48,6 +50,7 @@ export function EditProfile() {
               type="text"
               defaultValue={linksData?.website}
               className="px-2 py-1 text-gray-800"
+              disabled={pending}
             />
           </div>
           <div className="flex items-center gap-4 mt-8">
