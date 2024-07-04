@@ -28,7 +28,11 @@ export function EditProfile() {
     },
   })
 
-  if (!ready || !authenticated || !user?.farcaster?.fid) {
+  if (!ready) {
+    return null
+  }
+
+  if ((ready && !authenticated) || !user?.farcaster?.fid) {
     return (
       <h1 className="text-center text-xl lg:text-3xl font-semibold">
         Log in to edit your profile
