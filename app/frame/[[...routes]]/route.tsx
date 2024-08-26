@@ -192,7 +192,7 @@ app.frame('/user/:id', async (c) => {
     const farcasterUser = await getFarcasterUser(Number(fid))
     console.log('Farcaster user:', farcasterUser)
 
-    if (!farcasterUser.username) {
+    if (!farcasterUser || !farcasterUser.username) {
       return c.res({
         image: (
           <Box
@@ -228,7 +228,7 @@ app.frame('/user/:id', async (c) => {
           padding="32"
         >
           <VStack gap="8">
-            {farcasterUser.pfp && (
+            {farcasterUser.pfp ? (
               <Image
                 src={farcasterUser.pfp}
                 width="96"
@@ -236,6 +236,19 @@ app.frame('/user/:id', async (c) => {
                 objectFit="cover"
                 borderRadius="48"
               />
+            ) : (
+              <Box
+                width="96"
+                height="96"
+                backgroundColor="text200"
+                borderRadius="48"
+                alignVertical="center"
+                alignHorizontal="center"
+              >
+                <Text color="background" size="16" align="center">
+                  Urgh!! Not Again!!
+                </Text>
+              </Box>
             )}
             <Heading>{farcasterUser.displayName || 'Unknown User'}</Heading>
             <Text color="text200" size="16">
