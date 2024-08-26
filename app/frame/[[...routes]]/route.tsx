@@ -170,26 +170,84 @@ app.frame('/signup', async (c) => {
 })
 
 app.frame('/user/:id', async (c) => {
-  const id = c.req.param('id')
+  try {
+    const id = c.req.param('id')
+    console.log('Accessing user route with id:', id)
 
-  let fid = id
+    let fid = id
 
-  // Test to see if `id` is potentially a username
-  const isNumbersOnly = new RegExp('^[0-9]+$')
-  if (!isNumbersOnly.test(id)) {
-    fid = await getFarcasterIdByUsername(id)
-  }
+    // Test to see if `id` is potentially a username
+    const isNumbersOnly = new RegExp('^[0-9]+$')
+    if (!isNumbersOnly.test(id)) {
+      fid = await getFarcasterIdByUsername(id)
+    }
 
-  const { data: linksData } = await supabase
-    .from('links')
-    .select()
-    .eq('user_fid', fid)
-    .limit(1)
-    .maybeSingle()
+    const { data: linksData } = await supabase
+      .from('links')
+      .select()
+      .eq('user_fid', fid)
+      .limit(1)
+      .maybeSingle()
 
-  const farcasterUser = await getFarcasterUser(Number(fid))
+    const farcasterUser = await getFarcasterUser(Number(fid))
+    console.log('Farcaster user:', farcasterUser)
 
-  if (!farcasterUser.username) {
+    if (!farcasterUser.username) {
+      return c.res({
+        image: (
+          <Box
+            grow
+            alignVertical="center"
+            backgroundColor="background"
+            padding="32"
+          >
+            <Heading>Error ⚠️</Heading>
+            <Text color="text200" size="20">
+              User Not Found
+            </Text>
+          </Box>
+        ),
+      })
+    }
+
+    let intents: FrameIntent[] = [
+      <TextInput placeholder="Enter Link..." />,
+      <Button action="/signup">Add Link</Button>,
+    ]
+
+    if (linksData && linksData.website) {
+      intents = [<Button.Link href={linksData.website}>View Website</Button.Link>]
+    }
+
+    return c.res({
+      image: (
+        <Box
+          grow
+          alignVertical="center"
+          backgroundColor="background"
+          padding="32"
+        >
+          <VStack gap="8">
+            {farcasterUser.pfp && (
+              <Image
+                src={farcasterUser.pfp}
+                width="96"
+                height="96"
+                objectFit="cover"
+                borderRadius="48"
+              />
+            )}
+            <Heading>{farcasterUser.displayName || 'Unknown User'}</Heading>
+            <Text color="text200" size="16">
+              {farcasterUser.bio || 'No bio available'}
+            </Text>
+          </VStack>
+        </Box>
+      ),
+      intents,
+    })
+  } catch (error) {
+    console.error('Error in /user/:id route:', error)
     return c.res({
       image: (
         <Box
@@ -200,47 +258,12 @@ app.frame('/user/:id', async (c) => {
         >
           <Heading>Error ⚠️</Heading>
           <Text color="text200" size="20">
-            User Not Found
+            An unexpected error occurred
           </Text>
         </Box>
       ),
     })
   }
-
-  let intents: FrameIntent[] = [
-    <TextInput placeholder="Enter Link..." />,
-    <Button action="/signup">Add Link</Button>,
-  ]
-
-  if (linksData && linksData.website) {
-    intents = [<Button.Link href={linksData.website}>View Website</Button.Link>]
-  }
-
-  return c.res({
-    image: (
-      <Box
-        grow
-        alignVertical="center"
-        backgroundColor="background"
-        padding="32"
-      >
-        <VStack gap="8">
-          <Image
-            src={farcasterUser.pfp}
-            width="96"
-            height="96"
-            objectFit="cover"
-            borderRadius="48"
-          />
-          <Heading>{farcasterUser.displayName}</Heading>
-          <Text color="text200" size="16">
-            {farcasterUser.bio}
-          </Text>
-        </VStack>
-      </Box>
-    ),
-    intents,
-  })
 })
 
 devtools(app, { serveStatic })
