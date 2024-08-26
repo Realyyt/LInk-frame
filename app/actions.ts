@@ -1,69 +1,53 @@
 'use server'
 
-import { verifyPrivyToken } from '@/utils/privy-server'
 import { createSupabaseAdmin } from '@/utils/supabase/admin'
 import { revalidatePath } from 'next/cache'
 
 const supabaseAdmin = createSupabaseAdmin()
 
-export async function saveProfile(fid: number, formData: FormData) {
-  const verified = await verifyPrivyToken()
-
-  if (!verified) {
-    throw new Error('User not verified')
-  }
-
-  const website = formData.get('website')
+export async function saveProfile({ fid, formData }: { fid: number, formData: FormData }) {
+  const website = formData.get('website') as string
 
   try {
-    const { data: user, error: selectError } = await supabaseAdmin
+    console.log('Saving profile for FID:', fid)
+    
+    const { data: users, error: selectError } = await supabaseAdmin
       .from('users')
       .select()
       .eq('fid', fid)
       .limit(1)
-      .maybeSingle()
 
     if (selectError) {
+      console.error('Error selecting user:', selectError)
       throw new Error(selectError.message)
     }
 
-    // New User - Add user and link to database
+    const user = users?.[0]
+
     if (!user) {
-      const { error: insertUserError } = await supabaseAdmin
+      const { error: insertError } = await supabaseAdmin
         .from('users')
-        .insert({
-          fid,
-        })
+        .insert({ fid })
 
-      const { error: insertLinksError } = await supabaseAdmin
-        .from('links')
-        .insert([
-          {
-            website,
-            user_fid: fid,
-          },
-        ])
-
-      if (insertUserError || insertLinksError) {
-        throw new Error('Error creating user')
+      if (insertError) {
+        console.error('Error inserting user:', insertError)
+        throw new Error(insertError.message)
       }
-
-      return
     }
 
-    const { error: updateError } = await supabaseAdmin
+    const { error: upsertError } = await supabaseAdmin
       .from('links')
-      .update({
-        website,
-      })
-      .eq('user_fid', fid)
+      .upsert({ user_fid: fid, website }, { onConflict: 'user_fid' })
 
-    if (updateError) {
-      throw new Error(updateError.message)
+    if (upsertError) {
+      console.error('Error upserting link:', upsertError)
+      throw new Error(upsertError.message)
     }
-  } catch (error) {
-    throw new Error('Failed to save profile')
-  }
 
-  revalidatePath('/')
+    console.log('Profile saved successfully')
+    revalidatePath('/')
+  } catch (error) {
+    console.error('Failed to save profile:', error)
+    throw error
+  }
 }

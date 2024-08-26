@@ -40,7 +40,15 @@ export function EditProfile() {
     )
   }
 
-  const saveProfileWithFid = saveProfile.bind(null, user.farcaster.fid)
+  const saveProfileWithFid = (formData: FormData) => {
+    const fid = user?.farcaster?.fid
+    if (typeof fid !== 'number') {
+      console.error('Invalid FID:', fid)
+      // Handle the error, e.g., show a message to the user
+      return
+    }
+    return saveProfile({ fid, formData })
+  }
 
   return (
     <div>
@@ -59,6 +67,7 @@ export function EditProfile() {
           </div>
           <div className="flex items-center gap-4 mt-8">
             <SubmitButton />
+            <button type="submit">Submit (Test)</button> {/* Add this line */}
             <Link href={`/user/${user.farcaster.fid}`}>View Profile</Link>
           </div>
         </form>
